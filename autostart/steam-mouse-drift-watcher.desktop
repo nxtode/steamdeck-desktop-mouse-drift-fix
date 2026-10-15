@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Stop Steam Mouse Drift (Automatic)
+Comment=Keep Desktop Mode free of Steam background mouse drift
+Exec=/home/deck/.local/bin/steam-mouse-drift-watcher
+Icon=steam
+Terminal=false
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+StartupNotify=false
