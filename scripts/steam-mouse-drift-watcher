@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# X11 KDE Desktop Mode-only workaround. No Gaming Mode or Steam Input settings modified.
+set -u
+runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+exec 9>"$runtime_dir/steam-mouse-drift-watcher.lock"
+flock -n 9 || exit 0
+
+log() {
+  logger -t steam-mouse-drift-watcher -- "$*" 2>/dev/null || :
+}
+
+steam_running() {
+  pgrep -x steam >/dev/null 2>&1
+}
+
+steam_ui_visible() {
+  xdotool search --onlyvisible --class '[Ss]team' >/dev/null 2>&1
+}
+
+# A user-level steam.desktop Hidden=true override normally blocks desktop autostart.
+# This one-time safeguard catches Steam started by another source during login.
+sleep 12
+if steam_running; then
+  log "Desktop start: gracefully closing auto-started Steam"
+  "$HOME/.local/bin/stop-steam-mouse-drift" || :
+fi
+
+# Only close Steam after its GUI has actually appeared and then been hidden.
+# Steam minimized to the tray will be closed too. Check 4 times, 2 seconds apart.
+ui_seen=0
+hidden_checks=0
+display_failures=0
+while :; do
+  if ! xdotool getdisplaygeometry >/dev/null 2>&1; then
+    display_failures=$((display_failures + 1))
+    if [ "$display_failures" -ge 3 ]; then log "Desktop session ended; watcher exiting"; exit 0; fi
+    sleep 2
+    continue
+  fi
+  display_failures=0
+  if ! steam_running; then
+    ui_seen=0
+    hidden_checks=0
+  elif steam_ui_visible; then
+    ui_seen=1
+    hidden_checks=0
+  elif [ "$ui_seen" -eq 1 ]; then
+    hidden_checks=$((hidden_checks + 1))
+    if [ "$hidden_checks" -ge 4 ]; then
+      log "Steam UI hidden/closed for 8 seconds; requesting graceful shutdown"
+      "$HOME/.local/bin/stop-steam-mouse-drift" || :
+      ui_seen=0
+      hidden_checks=0
+    fi
+  fi
+  sleep 2
+done
