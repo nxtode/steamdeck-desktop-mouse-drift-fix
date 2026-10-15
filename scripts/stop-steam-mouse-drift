@@ -1,5 +1,5 @@
 #!/bin/sh
-# Gracefully shut down Steam in Desktop Mode. Deskflow is unaffected.
+# Gracefully shut down Steam in Desktop Mode to stop background cursor movement.
 steam_bin="$HOME/.local/share/Steam/ubuntu12_32/steam"
 
 message() {
@@ -9,7 +9,7 @@ message() {
 }
 
 if ! pgrep -x steam >/dev/null 2>&1; then
-  message "Steam is already closed" "No action needed. Deskflow remains connected."
+  message "Steam is already closed" "No action needed."
   exit 0
 fi
 
@@ -28,4 +28,4 @@ if pgrep -x steam >/dev/null 2>&1; then
   message "Steam still running" "Shutdown requested, but the Steam process has not exited yet."
   exit 1
 fi
-message "Steam stopped" "Steam desktop input stopped. Deskflow stays connected."
+message "Steam stopped" "Steam desktop input stopped."
