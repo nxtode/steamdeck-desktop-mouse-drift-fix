@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Stop Steam Mouse Drift
+GenericName=Stop Steam Desktop Input
+Comment=Gracefully shut down Steam to stop mouse drift without affecting Deskflow
+Exec=/home/deck/.local/bin/stop-steam-mouse-drift
+Icon=steam
+Terminal=false
+Categories=Utility;
+StartupNotify=false
