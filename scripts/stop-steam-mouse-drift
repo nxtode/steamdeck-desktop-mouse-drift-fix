@@ -1,0 +1,31 @@
+#!/bin/sh
+# Gracefully shut down Steam in Desktop Mode. Deskflow is unaffected.
+steam_bin="$HOME/.local/share/Steam/ubuntu12_32/steam"
+
+message() {
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send --app-name="Stop Steam Mouse Drift" --icon=steam "$1" "$2"
+  fi
+}
+
+if ! pgrep -x steam >/dev/null 2>&1; then
+  message "Steam is already closed" "No action needed. Deskflow remains connected."
+  exit 0
+fi
+
+if ! "$steam_bin" -shutdown >/dev/null 2>&1; then
+  message "Unable to stop Steam" "Open Steam and choose Exit, or try this shortcut again."
+  exit 1
+fi
+
+attempt=0
+while pgrep -x steam >/dev/null 2>&1 && [ "$attempt" -lt 20 ]; do
+  sleep 0.5
+  attempt=$((attempt + 1))
+done
+
+if pgrep -x steam >/dev/null 2>&1; then
+  message "Steam still running" "Shutdown requested, but the Steam process has not exited yet."
+  exit 1
+fi
+message "Steam stopped" "Steam desktop input stopped. Deskflow stays connected."
